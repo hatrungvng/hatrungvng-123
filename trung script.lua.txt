@@ -1,0 +1,592 @@
+--[[
+████████╗██████╗ ██╗   ██╗███╗   ██╗ ██████╗ ██████╗ ██████╗  ██████╗ 
+╚══██╔══╝██╔══██╗██║   ██║████╗  ██║██╔════╝ ██╔══██╗██╔══██╗██╔═══██╗
+   ██║   ██████╔╝██║   ██║██╔██╗ ██║██║  ███╗██████╔╝██████╔╝██║   ██║
+   ██║   ██╔══██╗██║   ██║██║╚██╗██║██║   ██║██╔══██╗██╔═══╝ ██║   ██║
+   ██║   ██║  ██║╚██████╔╝██║ ╚████║╚██████╔╝██║  ██║██║     ╚██████╔╝
+   ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚═╝      ╚═════╝ 
+-- TRUNGPRO - GHIM TÂM VẠCH ĐỎ
+-- OWNER ID: 127214133354569
+]]
+
+---------------------------------------------------------
+-- SERVICES
+---------------------------------------------------------
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+local VirtualUser = game:GetService("VirtualUser")
+
+---------------------------------------------------------
+-- BIẾN TOÀN CỤC
+---------------------------------------------------------
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+local camera = Workspace.CurrentCamera
+
+-- ANTI AFK
+player.Idled:Connect(function()
+    VirtualUser:CaptureController()
+    VirtualUser:ClickButton2(Vector2.new())
+end)
+
+-- BLOX FRUIT REMOTES
+local Remote = ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("CommF_")
+local RemoteFunction = ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Function")
+local RemoteEvent = ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Event")
+
+---------------------------------------------------------
+-- ID SYSTEM - OWNER: 127214133354569
+---------------------------------------------------------
+local IDSystem = {
+    OwnerID = 127214133354569,
+    UserID = player.UserId,
+    IsOwner = false,
+}
+
+function IDSystem:CheckOwner()
+    if self.UserID == self.OwnerID then
+        self.IsOwner = true
+        return true
+    end
+    return false
+end
+
+IDSystem:CheckOwner()
+
+---------------------------------------------------------
+-- NOTIFICATION
+---------------------------------------------------------
+local function Notify(title, text, duration)
+    duration = duration or 3
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = "🔴 TRUNGPRO | " .. title,
+            Text = text,
+            Duration = duration
+        })
+    end)
+end
+
+-- Thông báo owner
+if IDSystem.IsOwner then
+    Notify("👑 OWNER", "ID: 127214133354569 - FULL ACCESS", 5)
+else
+    Notify("🔑 USER", "ID: " .. player.UserId, 3)
+end
+
+---------------------------------------------------------
+-- SETTINGS GHIM TÂM VẠCH ĐỎ
+---------------------------------------------------------
+local Settings = {
+    -- GHIM TÂM
+    TargetLock = false,
+    Target = nil,
+    TargetMode = "Nearest",      -- Nearest, Mouse, LowestHP
+    
+    -- VẠCH ĐỎ
+    RedLine = true,
+    RedLineColor = Color3.fromRGB(255, 0, 0),
+    RedLineThickness = 2,
+    RedLineTransparency = 0.5,
+    
+    -- CHIÊU CHUẨN
+    NoSkillMiss = true,          -- Không trượt chiêu
+    AutoSkill = false,
+    SkillRange = 100,
+    
+    -- AIMBOT
+    Aimbot = true,
+    AimbotMode = "Head",
+    AimbotSmooth = 5,
+    
+    -- VISUALS
+    ShowTargetInfo = true,
+    TargetCircle = true,
+    TargetCircleColor = Color3.fromRGB(255, 0, 0),
+    ShowArrow = true,
+}
+
+---------------------------------------------------------
+-- BIẾN GHIM TÂM
+---------------------------------------------------------
+local GhimTam = {
+    Target = nil,
+    Locked = false,
+    RedLineDrawing = nil,
+    TargetCircle = nil,
+    TargetArrow = nil,
+    TargetNameText = nil,
+    TargetDistanceText = nil,
+    Connections = {},
+}
+
+---------------------------------------------------------
+-- TẠO VẠCH ĐỎ (RED LINE)
+---------------------------------------------------------
+local function CreateRedLine()
+    if GhimTam.RedLineDrawing then
+        pcall(function() GhimTam.RedLineDrawing:Remove() end)
+    end
+    
+    local line = Drawing.new("Line")
+    line.Visible = false
+    line.Color = Settings.RedLineColor
+    line.Thickness = Settings.RedLineThickness
+    line.Transparency = Settings.RedLineTransparency
+    line.From = Vector2.new(0, 0)
+    line.To = Vector2.new(0, 0)
+    
+    GhimTam.RedLineDrawing = line
+    return line
+end
+
+---------------------------------------------------------
+-- TẠO VÒNG TRÒN MỤC TIÊU
+---------------------------------------------------------
+local function CreateTargetCircle()
+    if GhimTam.TargetCircle then
+        pcall(function() GhimTam.TargetCircle:Remove() end)
+    end
+    
+    local circle = Drawing.new("Circle")
+    circle.Visible = false
+    circle.Color = Settings.TargetCircleColor
+    circle.Thickness = 3
+    circle.NumSides = 32
+    circle.Radius = 60
+    circle.Filled = false
+    circle.Position = Vector2.new(0, 0)
+    
+    GhimTam.TargetCircle = circle
+    return circle
+end
+
+---------------------------------------------------------
+-- TẠO MŨI TÊN CHỈ MỤC TIÊU
+---------------------------------------------------------
+local function CreateTargetArrow()
+    if GhimTam.TargetArrow then
+        pcall(function() GhimTam.TargetArrow:Remove() end)
+    end
+    
+    local arrow = Drawing.new("Triangle")
+    arrow.Visible = false
+    arrow.Color = Color3.fromRGB(255, 0, 0)
+    arrow.Filled = true
+    arrow.Thickness = 2
+    arrow.PointA = Vector2.new(0, 0)
+    arrow.PointB = Vector2.new(0, 0)
+    arrow.PointC = Vector2.new(0, 0)
+    
+    GhimTam.TargetArrow = arrow
+    return arrow
+end
+
+---------------------------------------------------------
+-- TẠO TEXT TÊN MỤC TIÊU
+---------------------------------------------------------
+local function CreateTargetNameText()
+    if GhimTam.TargetNameText then
+        pcall(function() GhimTam.TargetNameText:Remove() end)
+    end
+    
+    local text = Drawing.new("Text")
+    text.Visible = false
+    text.Size = 18
+    text.Center = true
+    text.Outline = true
+    text.OutlineColor = Color3.new(0, 0, 0)
+    text.Color = Color3.fromRGB(255, 255, 255)
+    text.Font = 3
+    text.Text = ""
+    
+    GhimTam.TargetNameText = text
+    return text
+end
+
+---------------------------------------------------------
+-- TẠO TEXT KHOẢNG CÁCH
+---------------------------------------------------------
+local function CreateTargetDistanceText()
+    if GhimTam.TargetDistanceText then
+        pcall(function() GhimTam.TargetDistanceText:Remove() end)
+    end
+    
+    local text = Drawing.new("Text")
+    text.Visible = false
+    text.Size = 14
+    text.Center = true
+    text.Outline = true
+    text.OutlineColor = Color3.new(0, 0, 0)
+    text.Color = Color3.fromRGB(255, 255, 0)
+    text.Font = 3
+    text.Text = ""
+    
+    GhimTam.TargetDistanceText = text
+    return text
+end
+
+---------------------------------------------------------
+-- KHỞI TẠO TẤT CẢ DRAWINGS
+---------------------------------------------------------
+CreateRedLine()
+CreateTargetCircle()
+CreateTargetArrow()
+CreateTargetNameText()
+CreateTargetDistanceText()
+
+---------------------------------------------------------
+-- HÀM LẤY NGƯỜI CHƠI GẦN NHẤT
+---------------------------------------------------------
+local function GetNearestPlayer()
+    local nearest = nil
+    local shortest = 9999
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    
+    if not root then return nil end
+    
+    for _, v in pairs(Players:GetPlayers()) do
+        if v ~= player and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+            local vRoot = v.Character.HumanoidRootPart
+            local vHum = v.Character:FindFirstChild("Humanoid")
+            
+            if vHum and vHum.Health > 0 then
+                local dist = (root.Position - vRoot.Position).Magnitude
+                if dist < shortest then
+                    nearest = v
+                    shortest = dist
+                end
+            end
+        end
+    end
+    
+    return nearest
+end
+
+---------------------------------------------------------
+-- HÀM LẤY NGƯỜI CHƠI MÁU THẤP NHẤT
+---------------------------------------------------------
+local function GetLowestHpPlayer()
+    local target = nil
+    local lowestHp = math.huge
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    
+    if not root then return nil end
+    
+    for _, v in pairs(Players:GetPlayers()) do
+        if v ~= player and v.Character and v.Character:FindFirstChild("Humanoid") then
+            local vHum = v.Character.Humanoid
+            local vRoot = v.Character:FindFirstChild("HumanoidRootPart")
+            
+            if vHum and vHum.Health > 0 and vRoot then
+                local dist = (root.Position - vRoot.Position).Magnitude
+                if dist < 300 and vHum.Health < lowestHp then
+                    target = v
+                    lowestHp = vHum.Health
+                end
+            end
+        end
+    end
+    
+    return target
+end
+
+---------------------------------------------------------
+-- RENDER VẠCH ĐỎ VÀ MỤC TIÊU
+---------------------------------------------------------
+RunService.RenderStepped:Connect(function()
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    
+    if not root or not GhimTam.Locked or not GhimTam.Target then
+        -- Ẩn các drawing
+        if GhimTam.RedLineDrawing then
+            GhimTam.RedLineDrawing.Visible = false
+        end
+        if GhimTam.TargetCircle then
+            GhimTam.TargetCircle.Visible = false
+        end
+        if GhimTam.TargetArrow then
+            GhimTam.TargetArrow.Visible = false
+        end
+        if GhimTam.TargetNameText then
+            GhimTam.TargetNameText.Visible = false
+        end
+        if GhimTam.TargetDistanceText then
+            GhimTam.TargetDistanceText.Visible = false
+        end
+        return
+    end
+    
+    local target = GhimTam.Target
+    if not target.Character then 
+        GhimTam.Target = nil
+        GhimTam.Locked = false
+        return 
+    end
+    
+    local targetRoot = target.Character:FindFirstChild("HumanoidRootPart") or 
+                       target.Character:FindFirstChild("Head")
+    
+    if not targetRoot then return end
+    
+    -- Tính toán vị trí trên màn hình
+    local rootPos, rootOnScreen = camera:WorldToViewportPoint(root.Position)
+    local targetPos, targetOnScreen = camera:WorldToViewportPoint(targetRoot.Position)
+    
+    -- Khoảng cách thực tế
+    local distance = (root.Position - targetRoot.Position).Magnitude
+    
+    -- VẠCH ĐỎ (Red Line) - Nối từ người chơi đến mục tiêu
+    if Settings.RedLine and GhimTam.RedLineDrawing then
+        GhimTam.RedLineDrawing.From = Vector2.new(rootPos.X, rootPos.Y)
+        GhimTam.RedLineDrawing.To = Vector2.new(targetPos.X, targetPos.Y)
+        GhimTam.RedLineDrawing.Visible = true
+    end
+    
+    -- VÒNG TRÒN BAO QUANH MỤC TIÊU
+    if Settings.TargetCircle and GhimTam.TargetCircle and targetOnScreen then
+        GhimTam.TargetCircle.Position = Vector2.new(targetPos.X, targetPos.Y - 30)
+        GhimTam.TargetCircle.Radius = 60 + (math.sin(tick() * 5) * 5) -- Nhấp nháy nhẹ
+        GhimTam.TargetCircle.Visible = true
+    end
+    
+    -- TEXT TÊN MỤC TIÊU
+    if GhimTam.TargetNameText and targetOnScreen then
+        GhimTam.TargetNameText.Position = Vector2.new(targetPos.X, targetPos.Y - 100)
+        GhimTam.TargetNameText.Text = "🔴 " .. target.Name .. " 🔴"
+        GhimTam.TargetNameText.Visible = true
+    end
+    
+    -- TEXT KHOẢNG CÁCH
+    if GhimTam.TargetDistanceText and targetOnScreen then
+        GhimTam.TargetDistanceText.Position = Vector2.new(targetPos.X, targetPos.Y - 75)
+        GhimTam.TargetDistanceText.Text = math.floor(distance) .. "m"
+        GhimTam.TargetDistanceText.Visible = true
+    end
+    
+    -- MŨI TÊN CHỈ HƯỚNG (khi mục tiêu ở ngoài màn hình)
+    if not targetOnScreen and Settings.ShowArrow and GhimTam.TargetArrow then
+        local direction = (targetRoot.Position - root.Position).Unit
+        local angle = math.atan2(direction.Z, direction.X)
+        
+        -- Vẽ mũi tên ở rìa màn hình
+        local screenSize = camera.ViewportSize
+        local arrowPos = Vector2.new(
+            screenSize.X / 2 + math.cos(angle) * 200,
+            screenSize.Y / 2 + math.sin(angle) * 200
+        )
+        
+        -- Giới hạn trong màn hình
+        arrowPos = Vector2.new(
+            math.clamp(arrowPos.X, 60, screenSize.X - 60),
+            math.clamp(arrowPos.Y, 60, screenSize.Y - 60)
+        )
+        
+        GhimTam.TargetArrow.PointA = arrowPos + Vector2.new(0, -20)
+        GhimTam.TargetArrow.PointB = arrowPos + Vector2.new(-15, 15)
+        GhimTam.TargetArrow.PointC = arrowPos + Vector2.new(15, 15)
+        GhimTam.TargetArrow.Visible = true
+    else
+        if GhimTam.TargetArrow then
+            GhimTam.TargetArrow.Visible = false
+        end
+    end
+    
+    -- AIMBOT THEO MỤC TIÊU
+    if Settings.Aimbot and targetRoot and GhimTam.Locked then
+        local targetPart
+        if Settings.AimbotMode == "Head" then
+            targetPart = target.Character:FindFirstChild("Head")
+        else
+            targetPart = targetRoot
+        end
+        
+        if targetPart then
+            local smoothness = Settings.AimbotSmooth * 0.1
+            camera.CFrame = camera.CFrame:Lerp(
+                CFrame.new(camera.CFrame.p, targetPart.Position),
+                smoothness
+            )
+        end
+    end
+end)
+
+---------------------------------------------------------
+-- AUTO SKILL
+---------------------------------------------------------
+task.spawn(function()
+    while true do
+        task.wait(0.2)
+        
+        if Settings.AutoSkill and GhimTam.Locked and GhimTam.Target and Remote then
+            -- Kiểm tra khoảng cách
+            local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+            local targetRoot = GhimTam.Target.Character and GhimTam.Target.Character:FindFirstChild("HumanoidRootPart")
+            
+            if root and targetRoot then
+                local dist = (root.Position - targetRoot.Position).Magnitude
+                if dist <= Settings.SkillRange then
+                    -- Dùng skill combo
+                    pcall(function()
+                        Remote:InvokeServer("Z")
+                    end)
+                    task.wait(0.1)
+                    pcall(function()
+                        Remote:InvokeServer("X")
+                    end)
+                    task.wait(0.1)
+                    pcall(function()
+                        Remote:InvokeServer("C")
+                    end)
+                    task.wait(0.1)
+                    pcall(function()
+                        Remote:InvokeServer("V")
+                    end)
+                end
+            end
+        end
+    end
+end)
+
+---------------------------------------------------------
+-- UI LIBRARY (KAVO)
+---------------------------------------------------------
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+local Window = Library.CreateLib("🔴 TRUNGPRO - GHIM TÂM VẠCH ĐỎ | OWNER: 127214133354569", "DarkTheme")
+
+-- TABS
+local TabGhimTam = Window:NewTab("📌 GHIM TÂM")
+local TabRedLine = Window:NewTab("🔴 VẠCH ĐỎ")
+local TabSkill = Window:NewTab("⚡ CHIÊU CHUẨN")
+local TabTarget = Window:NewTab("🎯 MỤC TIÊU")
+local TabInfo = Window:NewTab("📊 THÔNG TIN")
+
+-- SECTIONS
+local SectionGhimTam = TabGhimTam:NewSection("📌 GHIM TÂM VẠCH ĐỎ")
+local SectionRedLine = TabRedLine:NewSection("🔴 CÀI ĐẶT VẠCH ĐỎ")
+local SectionSkill = TabSkill:NewSection("⚡ CHIÊU CHUẨN - KHÔNG TRƯỢT")
+local SectionTarget = TabTarget:NewSection("🎯 CHỌN MỤC TIÊU")
+local SectionInfo = TabInfo:NewSection("📊 THÔNG TIN MỤC TIÊU")
+local SectionCredits = TabInfo:NewSection("🇻🇳 THÔNG TIN SCRIPT")
+
+---------------------------------------------------------
+-- GHIM TÂM SECTION
+---------------------------------------------------------
+SectionGhimTam:NewToggle("🔴 GHIM TÂM VẠCH ĐỎ", "Bật/tắt ghim tâm vạch đỏ", function(state)
+    GhimTam.Locked = state
+    Settings.TargetLock = state
+    Notify("📌 GHIM TÂM", state and "ĐÃ BẬT - VẠCH ĐỎ" or "ĐÃ TẮT", 2)
+end)
+
+SectionGhimTam:NewDropdown("📌 CHẾ ĐỘ GHIM", "Chọn cách ghim tâm", {"Nearest", "LowestHP", "Mouse Target"}, function(option)
+    Settings.TargetMode = option
+    Notify("📌 CHẾ ĐỘ", "ĐÃ CHỌN: " .. option, 1)
+end)
+
+SectionGhimTam:NewButton("🎯 GHIM NGƯỜI GẦN NHẤT", "Tự động ghim người gần nhất", function()
+    local nearest = GetNearestPlayer()
+    if nearest then
+        GhimTam.Target = nearest
+        GhimTam.Locked = true
+        Settings.TargetLock = true
+        Notify("📌 GHIM TÂM", "ĐÃ GHIM: " .. nearest.Name, 2)
+    else
+        Notify("📌 GHIM TÂM", "KHÔNG TÌM THẤY MỤC TIÊU", 2)
+    end
+end)
+
+SectionGhimTam:NewButton("💔 GHIM MÁU THẤP NHẤT", "Ghim người yếu máu nhất", function()
+    local lowest = GetLowestHpPlayer()
+    if lowest then
+        GhimTam.Target = lowest
+        GhimTam.Locked = true
+        Settings.TargetLock = true
+        Notify("📌 GHIM TÂM", "ĐÃ GHIM: " .. lowest.Name, 2)
+    else
+        Notify("📌 GHIM TÂM", "KHÔNG TÌM THẤY MỤC TIÊU", 2)
+    end
+end)
+
+SectionGhimTam:NewButton("❌ BỎ GHIM", "Hủy ghim mục tiêu", function()
+    GhimTam.Target = nil
+    GhimTam.Locked = false
+    Settings.TargetLock = false
+    Notify("📌 GHIM TÂM", "ĐÃ BỎ GHIM", 2)
+end)
+
+---------------------------------------------------------
+-- VẠCH ĐỎ SECTION
+---------------------------------------------------------
+SectionRedLine:NewToggle("🔴 HIỂN THỊ VẠCH ĐỎ", "Hiển thị đường kẻ đỏ đến mục tiêu", function(state)
+    Settings.RedLine = state
+    if GhimTam.RedLineDrawing then
+        GhimTam.RedLineDrawing.Visible = state
+    end
+end)
+
+SectionRedLine:NewColorPicker("🎨 MÀU VẠCH ĐỎ", "Chọn màu vạch", Color3.fromRGB(255, 0, 0), function(color)
+    Settings.RedLineColor = color
+    if GhimTam.RedLineDrawing then
+        GhimTam.RedLineDrawing.Color = color
+    end
+end)
+
+SectionRedLine:NewSlider("📏 ĐỘ DÀY VẠCH", "Chọn độ dày", 1, 5, function(value)
+    Settings.RedLineThickness = value
+    if GhimTam.RedLineDrawing then
+        GhimTam.RedLineDrawing.Thickness = value
+    end
+end, 2)
+
+SectionRedLine:NewSlider("🔆 ĐỘ TRONG SUỐT", "0 = đục, 1 = trong", 0, 1, function(value)
+    Settings.RedLineTransparency = value
+    if GhimTam.RedLineDrawing then
+        GhimTam.RedLineDrawing.Transparency = value
+    end
+end, 0.5)
+
+SectionRedLine:NewToggle("⭕ VÒNG TRÒN MỤC TIÊU", "Hiển thị vòng tròn quanh mục tiêu", function(state)
+    Settings.TargetCircle = state
+    if GhimTam.TargetCircle then
+        GhimTam.TargetCircle.Visible = state
+    end
+end)
+
+SectionRedLine:NewToggle("🏹 MŨI TÊN CHỈ HƯỚNG", "Hiển thị mũi tên khi mục tiêu ở xa", function(state)
+    Settings.ShowArrow = state
+end)
+
+---------------------------------------------------------
+-- CHIÊU CHUẨN SECTION
+---------------------------------------------------------
+SectionSkill:NewToggle("⚡ KHÔNG TRƯỢT CHIÊU", "Bật để chiêu luôn trúng mục tiêu", function(state)
+    Settings.NoSkillMiss = state
+    Notify("⚡ CHIÊU CHUẨN", state and "ĐÃ BẬT - KHÔNG TRƯỢT" or "ĐÃ TẮT", 2)
+end)
+
+SectionSkill:NewToggle("🤖 AUTO SKILL", "Tự động dùng skill combo", function(state)
+    Settings.AutoSkill = state
+end)
+
+SectionSkill:NewSlider("📏 TẦM ĐÁNH", "Khoảng cách tối đa để dùng skill", 50, 300, function(value)
+    Settings.SkillRange = value
+end, 100)
+
+SectionSkill:NewToggle("🎯 AIMBOT", "Bật aimbot theo mục tiêu", function(state)
+    Settings.Aimbot = state
+end)
+
+SectionSkill:NewDropdown("🎯 AIMBOT MODE", "Chọn vị trí aim", {"Head", "Torso"}, function(option)
+    Settings.AimbotMode = option
+end)
+
+SectionSki

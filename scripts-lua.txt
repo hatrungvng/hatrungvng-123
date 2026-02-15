@@ -10,9 +10,7 @@
 -- ALL FEATURES HAVE IDs
 ]]
 
----------------------------------------------------------
 -- SERVICES
----------------------------------------------------------
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -27,9 +25,7 @@ local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 local CoreGui = game:GetService("CoreGui")
 
----------------------------------------------------------
 -- BIẾN TOÀN CỤC
----------------------------------------------------------
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
 local camera = Workspace.CurrentCamera
@@ -56,35 +52,34 @@ player.CharacterAdded:Connect(function(newChar)
     RootPart = Character:WaitForChild("HumanoidRootPart")
 end)
 
----------------------------------------------------------
 -- ======================================================
 -- ID SYSTEM - PHÂN QUYỀN THEO ID
 -- ======================================================
----------------------------------------------------------
+
 local IDSystem = {
     -- OWNER ID (FULL ACCESS)
     OwnerID = 127214133354569,
     UserID = player.UserId,
-    
+
     -- QUYỀN HẠN
     IsOwner = false,
     IsAdmin = false,
     IsVIP = false,
     IsUser = true,
-    
+
     -- DANH SÁCH ADMIN (CÓ THỂ THÊM)
     AdminIDs = {
         [123456789] = "Admin 1",
         [987654321] = "Admin 2",
     },
-    
+
     -- DANH SÁCH VIP (CÓ THỂ THÊM)
     VIPIDs = {
         [555555555] = "VIP 1",
         [666666666] = "VIP 2",
         [777777777] = "VIP 3",
     },
-    
+
     -- HỆ THỐNG ID CHO TỪNG TÍNH NĂNG
     FeatureIDs = {
         -- NHÓM 1: AUTO FARM [AF-001 đến AF-020]
@@ -102,7 +97,7 @@ local IDSystem = {
         AutoStoreFruit = "AF-012",
         AutoEatFruit = "AF-013",
         FastAttack = "AF-014",
-        
+
         -- NHÓM 2: AUTO BOSS & RAID [BR-001 đến BR-015]
         AutoBossMain = "BR-001",
         AutoBossSaber = "BR-002",
@@ -119,7 +114,7 @@ local IDSystem = {
         AutoDungeonInferno = "BR-013",
         AutoCollectTrinkets = "BR-014",
         AutoEquipTrinkets = "BR-015",
-        
+
         -- NHÓM 3: AUTO COMBAT [CB-001 đến CB-025]
         AutoClick = "CB-001",
         AutoSkill = "CB-002",
@@ -136,49 +131,36 @@ local IDSystem = {
         AutoSword = "CB-013",
         AutoGun = "CB-014",
         AutoFruit = "CB-015",
-        
+
         -- NHÓM 4: PVP PRO [PV-001 đến PV-035]
-        -- Ghim tâm vạch đỏ
         TargetLock = "PV-001",
         TargetModeNearest = "PV-002",
         TargetModeLowestHP = "PV-003",
         TargetModeMouse = "PV-004",
         TargetModeNamed = "PV-005",
-        
-        -- Vạch đỏ
         RedLine = "PV-006",
         TargetCircle = "PV-007",
         TargetArrow = "PV-008",
         TargetInfo = "PV-009",
         TargetHealthBar = "PV-010",
-        
-        -- Aimbot
         Aimbot = "PV-011",
         AimbotHead = "PV-012",
         AimbotTorso = "PV-013",
         AimbotRange = "PV-014",
         AimbotSmooth = "PV-015",
-        
-        -- Silent Aim
         SilentAim = "PV-016",
         SilentAimHead = "PV-017",
         SilentAimTorso = "PV-018",
         SilentAimWallbang = "PV-019",
-        
-        -- Kill Aura
         KillAura = "PV-020",
         KillAuraPlayers = "PV-021",
         KillAuraMobs = "PV-022",
         KillAuraAll = "PV-023",
-        
-        -- Hitbox
         HitboxExpander = "PV-024",
-        
-        -- Anti
         AntiStun = "PV-025",
         AntiKnockback = "PV-026",
         AntiCombatLog = "PV-027",
-        
+
         -- NHÓM 5: MOVEMENT [MV-001 đến MV-020]
         Speed = "MV-001",
         Jump = "MV-002",
@@ -193,7 +175,7 @@ local IDSystem = {
         InfYield = "MV-011",
         WallClimb = "MV-012",
         TeleportTools = "MV-013",
-        
+
         -- NHÓM 6: ESP [ES-001 đến ES-020]
         ESPMain = "ES-001",
         ESPPlayers = "ES-002",
@@ -214,7 +196,7 @@ local IDSystem = {
         ESPTracer = "ES-017",
         ESPChams = "ES-018",
         ESPGlow = "ES-019",
-        
+
         -- NHÓM 7: PLAYER [PL-001 đến PL-025]
         AntiBan = "PL-001",
         AntiKick = "PL-002",
@@ -236,7 +218,7 @@ local IDSystem = {
         Transparency = "PL-018",
         RespawnProtection = "PL-019",
         AutoRespawn = "PL-020",
-        
+
         -- NHÓM 8: WORLD [WD-001 đến WD-015]
         FullBright = "WD-001",
         TimeChanger = "WD-002",
@@ -244,7 +226,7 @@ local IDSystem = {
         GravityChanger = "WD-004",
         NoFog = "WD-005",
         Brightness = "WD-006",
-        
+
         -- NHÓM 9: VISUAL [VS-001 đến VS-010]
         FOVChanger = "VS-001",
         ThirdPerson = "VS-002",
@@ -253,7 +235,7 @@ local IDSystem = {
         NightVision = "VS-005",
         NoCameraShake = "VS-006",
         NoVisualRecoil = "VS-007",
-        
+
         -- NHÓM 10: SERVER [SV-001 đến SV-010]
         ServerHop = "SV-001",
         Rejoin = "SV-002",
@@ -262,19 +244,19 @@ local IDSystem = {
         RemoveEffects = "SV-005",
         RemoveGrass = "SV-006",
         RemoveWater = "SV-007",
-        
+
         -- NHÓM 11: MISC [MI-001 đến MI-010]
         AutoStat = "MI-001",
         AutoBuy = "MI-002",
         AutoSell = "MI-003",
-        
+
         -- NHÓM 12: VALENTINE 2026 [VT-001 đến VT-015]
         AutoFarmHearts = "VT-001",
         AutoDailyQuest = "VT-002",
         AutoDeliveryQuest = "VT-003",
         AutoGacha = "VT-004",
         AutoRideFlamingo = "VT-005",
-        
+
         -- NHÓM 13: YETI & FIEND YETI [YT-001 đến YT-010]
         YetiTransform = "YT-001",
         YetiCombo = "YT-002",
@@ -282,7 +264,7 @@ local IDSystem = {
         AutoHoldSkill = "YT-004",
         AutoSuperdash = "YT-005",
         AutoFarmMastery = "YT-006",
-        
+
         -- NHÓM 14: DUNGEON & TRINKETS [DG-001 đến DG-010]
         DungeonMain = "DG-001",
         DungeonSolo = "DG-002",
@@ -292,276 +274,125 @@ local IDSystem = {
     }
 }
 
----------------------------------------------------------
 -- KIỂM TRA QUYỀN
----------------------------------------------------------
 function IDSystem:CheckPermission()
     local userID = self.UserID
-    
-    -- Kiểm tra OWNER
+
     if userID == self.OwnerID then
-        self.IsOwner = true
-        self.IsAdmin = true
-        self.IsVIP = true
-        self.IsUser = false
+        self.IsOwner = true; self.IsAdmin = true; self.IsVIP = true; self.IsUser = false
         return "OWNER"
     end
-    
-    -- Kiểm tra ADMIN
     if self.AdminIDs[userID] then
-        self.IsAdmin = true
-        self.IsVIP = true
-        self.IsUser = false
+        self.IsAdmin = true; self.IsVIP = true; self.IsUser = false
         return "ADMIN"
     end
-    
-    -- Kiểm tra VIP
     if self.VIPIDs[userID] then
-        self.IsVIP = true
-        self.IsUser = false
+        self.IsVIP = true; self.IsUser = false
         return "VIP"
     end
-    
-    -- USER mặc định
     self.IsUser = true
     return "USER"
 end
 
----------------------------------------------------------
 -- KIỂM TRA QUYỀN TRUY CẬP TÍNH NĂNG
----------------------------------------------------------
 function IDSystem:CanAccess(featureID, requiredRank)
     requiredRank = requiredRank or "USER"
-    
-    -- OWNER được làm mọi thứ
-    if self.IsOwner then
-        return true
-    end
-    
-    -- ADMIN được làm mọi thứ trừ OWNER
-    if self.IsAdmin then
-        if requiredRank == "OWNER" then
-            return false
-        end
-        return true
-    end
-    
-    -- VIP được làm tính năng VIP trở xuống
-    if self.IsVIP then
-        if requiredRank == "OWNER" or requiredRank == "ADMIN" then
-            return false
-        end
-        return true
-    end
-    
-    -- USER chỉ được làm tính năng USER
-   if self.IsUser then
-      return requiredRank =="USER"
-    end
+
+    if self.IsOwner then return true end
+    if self.IsAdmin then return requiredRank ~= "OWNER" end
+    if self.IsVIP then return requiredRank ~= "OWNER" and requiredRank ~= "ADMIN" end
+    if self.IsUser then return requiredRank == "USER" end
+
     return false
 end
 
----------------------------------------------------------
 -- GÁN QUYỀN CHO TỪNG NHÓM TÍNH NĂNG
----------------------------------------------------------
 local FeatureRanks = {
     -- NHÓM 1: AUTO FARM (USER dùng được hầu hết)
-    ["AF-001"] = "USER",  -- Auto Farm Main
-    ["AF-002"] = "USER",  -- Auto Farm Level
-    ["AF-003"] = "USER",  -- Auto Farm Boss
-    ["AF-004"] = "USER",  -- Auto Farm Fruit
-    ["AF-005"] = "USER",  -- Auto Farm Money
-    ["AF-006"] = "USER",  -- Auto Farm Quest
-    ["AF-007"] = "VIP",   -- Auto Farm Bone (VIP)
-    ["AF-008"] = "VIP",   -- Auto Farm Fragment (VIP)
-    ["AF-009"] = "USER",  -- Auto Bring Mob
-    ["AF-010"] = "USER",  -- Auto Next Island
-    ["AF-011"] = "VIP",   -- Auto Buy Fruit (VIP)
-    ["AF-012"] = "VIP",   -- Auto Store Fruit (VIP)
-    ["AF-013"] = "VIP",   -- Auto Eat Fruit (VIP)
-    ["AF-014"] = "ADMIN", -- Fast Attack (ADMIN)
-    
+    ["AF-001"] = "USER",  ["AF-002"] = "USER",  ["AF-003"] = "USER",  ["AF-004"] = "USER",
+    ["AF-005"] = "USER",  ["AF-006"] = "USER",  ["AF-007"] = "VIP",   ["AF-008"] = "VIP",
+    ["AF-009"] = "USER",  ["AF-010"] = "USER",  ["AF-011"] = "VIP",   ["AF-012"] = "VIP",
+    ["AF-013"] = "VIP",   ["AF-014"] = "ADMIN",
+
     -- NHÓM 2: AUTO BOSS & RAID
-    ["BR-001"] = "USER",  -- Auto Boss Main
-    ["BR-002"] = "USER",  -- Auto Boss Saber
-    ["BR-003"] = "USER",  -- Auto Boss Swan
-    ["BR-004"] = "VIP",   -- Auto Boss Dough King (VIP)
-    ["BR-005"] = "VIP",   -- Auto Boss Rip Indra (VIP)
-    ["BR-006"] = "VIP",   -- Auto Boss Dark Beard (VIP)
-    ["BR-007"] = "VIP",   -- Auto Boss Cake Prince (VIP)
-    ["BR-008"] = "USER",  -- Auto Raid
-    ["BR-009"] = "VIP",   -- Auto Dungeon (VIP)
-    ["BR-010"] = "VIP",   -- Auto Dungeon Normal (VIP)
-    ["BR-011"] = "ADMIN", -- Auto Dungeon Hard (ADMIN)
-    ["BR-012"] = "ADMIN", -- Auto Dungeon Nightmare (ADMIN)
-    ["BR-013"] = "OWNER", -- Auto Dungeon Inferno (OWNER)
-    ["BR-014"] = "VIP",   -- Auto Collect Trinkets (VIP)
-    ["BR-015"] = "VIP",   -- Auto Equip Trinkets (VIP)
-    
+    ["BR-001"] = "USER",  ["BR-002"] = "USER",  ["BR-003"] = "USER",  ["BR-004"] = "VIP",
+    ["BR-005"] = "VIP",   ["BR-006"] = "VIP",   ["BR-007"] = "VIP",   ["BR-008"] = "USER",
+    ["BR-009"] = "VIP",   ["BR-010"] = "VIP",   ["BR-011"] = "ADMIN", ["BR-012"] = "ADMIN",
+    ["BR-013"] = "OWNER", ["BR-014"] = "VIP",   ["BR-015"] = "VIP",
+
     -- NHÓM 3: AUTO COMBAT
-    ["CB-001"] = "USER",  -- Auto Click
-    ["CB-002"] = "USER",  -- Auto Skill
-    ["CB-003"] = "USER",  -- Auto Skill Combo
-    ["CB-004"] = "USER",  -- Auto Skill Random
-    ["CB-005"] = "VIP",   -- Auto Skill Smart (VIP)
-    ["CB-006"] = "USER",  -- Auto Haki
-    ["CB-007"] = "USER",  -- Auto Buso
-    ["CB-008"] = "USER",  -- Auto Ken
-    ["CB-009"] = "USER",  -- Auto Heal
-    ["CB-010"] = "USER",  -- Auto Block
-    ["CB-011"] = "VIP",   -- Auto Dodge (VIP)
-    ["CB-012"] = "VIP",   -- Auto Parry (VIP)
-    ["CB-013"] = "USER",  -- Auto Sword
-    ["CB-014"] = "USER",  -- Auto Gun
-    ["CB-015"] = "USER",  -- Auto Fruit
-    
+    ["CB-001"] = "USER",  ["CB-002"] = "USER",  ["CB-003"] = "USER",  ["CB-004"] = "USER",
+    ["CB-005"] = "VIP",   ["CB-006"] = "USER",  ["CB-007"] = "USER",  ["CB-008"] = "USER",
+    ["CB-009"] = "USER",  ["CB-010"] = "USER",  ["CB-011"] = "VIP",   ["CB-012"] = "VIP",
+    ["CB-013"] = "USER",  ["CB-014"] = "USER",  ["CB-015"] = "USER",
+
     -- NHÓM 4: PVP PRO
-    ["PV-001"] = "USER",  -- Target Lock
-    ["PV-002"] = "USER",  -- Target Mode Nearest
-    ["PV-003"] = "USER",  -- Target Mode Lowest HP
-    ["PV-004"] = "USER",  -- Target Mode Mouse
-    ["PV-005"] = "VIP",   -- Target Mode Named (VIP)
-    ["PV-006"] = "USER",  -- Red Line
-    ["PV-007"] = "USER",  -- Target Circle
-    ["PV-008"] = "USER",  -- Target Arrow
-    ["PV-009"] = "USER",  -- Target Info
-    ["PV-010"] = "VIP",   -- Target Health Bar (VIP)
-    ["PV-011"] = "USER",  -- Aimbot
-    ["PV-012"] = "USER",  -- Aimbot Head
-    ["PV-013"] = "USER",  -- Aimbot Torso
-    ["PV-014"] = "USER",  -- Aimbot Range
-    ["PV-015"] = "USER",  -- Aimbot Smooth
-    ["PV-016"] = "VIP",   -- Silent Aim (VIP)
-    ["PV-017"] = "VIP",   -- Silent Aim Head (VIP)
-    ["PV-018"] = "VIP",   -- Silent Aim Torso (VIP)
-    ["PV-019"] = "ADMIN", -- Silent Aim Wallbang (ADMIN)
-    ["PV-020"] = "USER",  -- Kill Aura
-    ["PV-021"] = "USER",  -- Kill Aura Players
-    ["PV-022"] = "USER",  -- Kill Aura Mobs
-    ["PV-023"] = "USER",  -- Kill Aura All
-    ["PV-024"] = "VIP",   -- Hitbox Expander (VIP)
-    ["PV-025"] = "VIP",   -- Anti Stun (VIP)
-    ["PV-026"] = "VIP",   -- Anti Knockback (VIP)
-    ["PV-027"] = "ADMIN", -- Anti Combat Log (ADMIN)
-    
+    ["PV-001"] = "USER",  ["PV-002"] = "USER",  ["PV-003"] = "USER",  ["PV-004"] = "USER",
+    ["PV-005"] = "VIP",   ["PV-006"] = "USER",  ["PV-007"] = "USER",  ["PV-008"] = "USER",
+    ["PV-009"] = "USER",  ["PV-010"] = "VIP",   ["PV-011"] = "USER",  ["PV-012"] = "USER",
+    ["PV-013"] = "USER",  ["PV-014"] = "USER",  ["PV-015"] = "USER",  ["PV-016"] = "VIP",
+    ["PV-017"] = "VIP",   ["PV-018"] = "VIP",   ["PV-019"] = "ADMIN", ["PV-020"] = "USER",
+    ["PV-021"] = "USER",  ["PV-022"] = "USER",  ["PV-023"] = "USER",  ["PV-024"] = "VIP",
+    ["PV-025"] = "VIP",   ["PV-026"] = "VIP",   ["PV-027"] = "ADMIN",
+
     -- NHÓM 5: MOVEMENT
-    ["MV-001"] = "USER",  -- Speed
-    ["MV-002"] = "USER",  -- Jump
-    ["MV-003"] = "USER",  -- Fly
-    ["MV-004"] = "USER",  -- Noclip
-    ["MV-005"] = "USER",  -- Click TP
-    ["MV-006"] = "USER",  -- BHop
-    ["MV-007"] = "USER",  -- Auto Sprint
-    ["MV-008"] = "VIP",   -- Water Walk (VIP)
-    ["MV-009"] = "USER",  -- Anti Void
-    ["MV-010"] = "USER",  -- Inf Jump
-    ["MV-011"] = "VIP",   -- Inf Yield (VIP)
-    ["MV-012"] = "VIP",   -- Wall Climb (VIP)
-    ["MV-013"] = "ADMIN", -- Teleport Tools (ADMIN)
-    
+    ["MV-001"] = "USER",  ["MV-002"] = "USER",  ["MV-003"] = "USER",  ["MV-004"] = "USER",
+    ["MV-005"] = "USER",  ["MV-006"] = "USER",  ["MV-007"] = "USER",  ["MV-008"] = "VIP",
+    ["MV-009"] = "USER",  ["MV-010"] = "USER",  ["MV-011"] = "VIP",   ["MV-012"] = "VIP",
+    ["MV-013"] = "ADMIN",
+
     -- NHÓM 6: ESP
-    ["ES-001"] = "USER",  -- ESP Main
-    ["ES-002"] = "USER",  -- ESP Players
-    ["ES-003"] = "USER",  -- ESP Mobs
-    ["ES-004"] = "USER",  -- ESP Chests
-    ["ES-005"] = "USER",  -- ESP Fruits
-    ["ES-006"] = "USER",  -- ESP Boss
-    ["ES-007"] = "USER",  -- ESP NPC
-    ["ES-008"] = "VIP",   -- ESP Islands (VIP)
-    ["ES-009"] = "VIP",   -- ESP Vehicles (VIP)
-    ["ES-010"] = "USER",  -- ESP Items
-    ["ES-011"] = "VIP",   -- ESP Trinkets (VIP)
-    ["ES-012"] = "VIP",   -- ESP Hearts (VIP)
-    ["ES-013"] = "USER",  -- ESP Box
-    ["ES-014"] = "USER",  -- ESP Name
-    ["ES-015"] = "USER",  -- ESP Distance
-    ["ES-016"] = "USER",  -- ESP Health
-    ["ES-017"] = "VIP",   -- ESP Tracer (VIP)
-    ["ES-018"] = "ADMIN", -- ESP Chams (ADMIN)
-    ["ES-019"] = "ADMIN", -- ESP Glow (ADMIN)
-    
+    ["ES-001"] = "USER",  ["ES-002"] = "USER",  ["ES-003"] = "USER",  ["ES-004"] = "USER",
+    ["ES-005"] = "USER",  ["ES-006"] = "USER",  ["ES-007"] = "USER",  ["ES-008"] = "VIP",
+    ["ES-009"] = "VIP",   ["ES-010"] = "USER",  ["ES-011"] = "VIP",   ["ES-012"] = "VIP",
+    ["ES-013"] = "USER",  ["ES-014"] = "USER",  ["ES-015"] = "USER",  ["ES-016"] = "USER",
+    ["ES-017"] = "VIP",   ["ES-018"] = "ADMIN", ["ES-019"] = "ADMIN",
+
     -- NHÓM 7: PLAYER
-    ["PL-001"] = "USER",  -- Anti Ban
-    ["PL-002"] = "USER",  -- Anti Kick
-    ["PL-003"] = "VIP",   -- Anti Teleport (VIP)
-    ["PL-004"] = "USER",  -- Anti Afk
-    ["PL-005"] = "ADMIN", -- Anti Cheat Bypass (ADMIN)
-    ["PL-006"] = "VIP",   -- God Mode (VIP)
-    ["PL-007"] = "VIP",   -- Inf Stamina (VIP)
-    ["PL-008"] = "VIP",   -- Inf Energy (VIP)
-    ["PL-009"] = "ADMIN", -- Inf Items (ADMIN)
-    ["PL-010"] = "ADMIN", -- Inf Ammo (ADMIN)
-    ["PL-011"] = "USER",  -- No Fall Damage
-    ["PL-012"] = "USER",  -- No Knockback
-    ["PL-013"] = "USER",  -- No Slowdown
-    ["PL-014"] = "VIP",   -- No Stun (VIP)
-    ["PL-015"] = "ADMIN", -- No Damage (ADMIN)
-    ["PL-016"] = "ADMIN", -- No Cooldown (ADMIN)
-    ["PL-017"] = "VIP",   -- Invisibility (VIP)
-    ["PL-018"] = "USER",  -- Transparency
-    ["PL-019"] = "USER",  -- Respawn Protection
-    ["PL-020"] = "USER",  -- Auto Respawn
-    
+    ["PL-001"] = "USER",  ["PL-002"] = "USER",  ["PL-003"] = "VIP",   ["PL-004"] = "USER",
+    ["PL-005"] = "ADMIN", ["PL-006"] = "VIP",   ["PL-007"] = "VIP",   ["PL-008"] = "VIP",
+    ["PL-009"] = "ADMIN", ["PL-010"] = "ADMIN", ["PL-011"] = "USER",  ["PL-012"] = "USER",
+    ["PL-013"] = "USER",  ["PL-014"] = "VIP",   ["PL-015"] = "ADMIN", ["PL-016"] = "ADMIN",
+    ["PL-017"] = "VIP",   ["PL-018"] = "USER",  ["PL-019"] = "USER",  ["PL-020"] = "USER",
+
     -- NHÓM 8: WORLD
-    ["WD-001"] = "USER",  -- Full Bright
-    ["WD-002"] = "USER",  -- Time Changer
-    ["WD-003"] = "VIP",   -- Weather Changer (VIP)
-    ["WD-004"] = "VIP",   -- Gravity Changer (VIP)
-    ["WD-005"] = "USER",  -- No Fog
-    ["WD-006"] = "USER",  -- Brightness
-    
+    ["WD-001"] = "USER",  ["WD-002"] = "USER",  ["WD-003"] = "VIP",   ["WD-004"] = "VIP",
+    ["WD-005"] = "USER",  ["WD-006"] = "USER",
+
     -- NHÓM 9: VISUAL
-    ["VS-001"] = "USER",  -- FOV Changer
-    ["VS-002"] = "USER",  -- Third Person
-    ["VS-003"] = "USER",  -- Zoom Out
-    ["VS-004"] = "VIP",   -- XRay (VIP)
-    ["VS-005"] = "USER",  -- Night Vision
-    ["VS-006"] = "USER",  -- No Camera Shake
-    ["VS-007"] = "USER",  -- No Visual Recoil
-    
+    ["VS-001"] = "USER",  ["VS-002"] = "USER",  ["VS-003"] = "USER",  ["VS-004"] = "VIP",
+    ["VS-005"] = "USER",  ["VS-006"] = "USER",  ["VS-007"] = "USER",
+
     -- NHÓM 10: SERVER
-    ["SV-001"] = "USER",  -- Server Hop
-    ["SV-002"] = "USER",  -- Rejoin
-    ["SV-003"] = "USER",  -- Anti Lag
-    ["SV-004"] = "USER",  -- Optimize FPS
-    ["SV-005"] = "VIP",   -- Remove Effects (VIP)
-    ["SV-006"] = "VIP",   -- Remove Grass (VIP)
-    ["SV-007"] = "VIP",   -- Remove Water (VIP)
-    
+    ["SV-001"] = "USER",  ["SV-002"] = "USER",  ["SV-003"] = "USER",  ["SV-004"] = "USER",
+    ["SV-005"] = "VIP",   ["SV-006"] = "VIP",   ["SV-007"] = "VIP",
+
     -- NHÓM 11: MISC
-    ["MI-001"] = "USER",  -- Auto Stat
-    ["MI-002"] = "USER",  -- Auto Buy
-    ["MI-003"] = "USER",  -- Auto Sell
-    
+    ["MI-001"] = "USER",  ["MI-002"] = "USER",  ["MI-003"] = "USER",
+
     -- NHÓM 12: VALENTINE 2026
-    ["VT-001"] = "USER",  -- Auto Farm Hearts
-    ["VT-002"] = "USER",  -- Auto Daily Quest
-    ["VT-003"] = "USER",  -- Auto Delivery Quest
-    ["VT-004"] = "USER",  -- Auto Gacha
-    ["VT-005"] = "USER",  -- Auto Ride Flamingo
-    
+    ["VT-001"] = "USER",  ["VT-002"] = "USER",  ["VT-003"] = "USER",  ["VT-004"] = "USER",
+    ["VT-005"] = "USER",
+
     -- NHÓM 13: YETI
-    ["YT-001"] = "VIP",   -- Yeti Transform (VIP)
-    ["YT-002"] = "VIP",   -- Yeti Combo (VIP)
-    ["YT-003"] = "VIP",   -- Fiend Yeti Combo (VIP)
-    ["YT-004"] = "ADMIN", -- Auto Hold Skill (ADMIN)
-    ["YT-005"] = "ADMIN", -- Auto Superdash (ADMIN)
-    ["YT-006"] = "VIP",   -- Auto Farm Mastery (VIP)
-    
+    ["YT-001"] = "VIP",   ["YT-002"] = "VIP",   ["YT-003"] = "VIP",   ["YT-004"] = "ADMIN",
+    ["YT-005"] = "ADMIN", ["YT-006"] = "VIP",
+
     -- NHÓM 14: DUNGEON
-    ["DG-001"] = "USER",  -- Dungeon Main
-    ["DG-002"] = "USER",  -- Dungeon Solo
-    ["DG-003"] = "USER",  -- Dungeon Team
-    ["DG-004"] = "USER",  -- Trinket Collect
-    ["DG-005"] = "VIP",   -- Trinket Equip (VIP)
+    ["DG-001"] = "USER",  ["DG-002"] = "USER",  ["DG-003"] = "USER",  ["DG-004"] = "USER",
+    ["DG-005"] = "VIP",
 }
 
----------------------------------------------------------
 -- KIỂM TRA QUYỀN KHI CHẠY
----------------------------------------------------------
 local userRank = IDSystem:CheckPermission()
 
--- Thông báo chào mừng theo quyền
+local function Notify(title, text, duration)
+    duration = duration or 3
+    pcall(function()
+        StarterGui:SetCore("SendNotification", { Title = "🔑 " .. title, Text = text, Duration = duration })
+    end)
+end
+
 local welcomeMessage = ""
 if IDSystem.IsOwner then
     welcomeMessage = "👑 OWNER: 127214133354569 - FULL ACCESS"
@@ -573,7 +404,7 @@ else
     welcomeMessage = "👤 USER: " .. player.UserId .. " - USER ACCESS"
 end
 
-Notify("🔑 ID SYSTEM", welcomeMessage, 5)
+Notify("ID SYSTEM", welcomeMessage, 5)
 
 print([[
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

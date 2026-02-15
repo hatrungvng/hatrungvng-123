@@ -356,7 +356,7 @@ function IDSystem:CanAccess(featureID, requiredRank)
     
     -- USER chỉ được làm tính năng USER
    if self.IsUser then
-      return requiredRank == "USER"
+      return requiredRank =="USER"
     end
     return false
 end

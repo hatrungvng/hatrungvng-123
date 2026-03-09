@@ -518,6 +518,39 @@ async def stats(ctx):
     
     await ctx.send(embed=embed)
 
+# ==================== PHẦN NÓI CHUYỆN ====================
+
+@bot.event
+async def on_message(message):
+    # Bỏ qua tin nhắn của chính bot
+    if message.author == bot.user:
+        return
+    
+    # Lấy nội dung tin nhắn
+    content = message.content.lower()
+    
+    # Trả lời theo từ khóa
+    if "hello" in content or "hi" in content or "chào" in content:
+        await message.channel.send(f"👋 Chào bạn {message.author.name}!")
+    
+    elif "có khỏe không" in content or "khỏe ko" in content:
+        await message.channel.send("🤖 Mình khỏe, cảm ơn bạn! Còn bạn thì sao?")
+    
+    elif "cảm ơn" in content:
+        await message.channel.send("🙏 Không có gì! Luôn sẵn sàng giúp đỡ bạn.")
+    
+    elif "tạm biệt" in content or "bye" in content:
+        await message.channel.send("👋 Tạm biệt! Hẹn gặp lại!")
+    
+    elif "bạn tên gì" in content or "tên bạn là gì" in content:
+        await message.channel.send(f"🤖 Mình là **{bot.user.name}**, trợ lý của bạn đây!")
+    
+    elif "làm gì" in content or "chức năng" in content:
+        await message.channel.send("📋 Mình có thể:\n- Lấy key executor (!key)\n- Kiểm tra ping (!ping)\n- Trò chuyện với bạn\n- Và nhiều hơn nữa!")
+    
+    # Tiếp tục xử lý các lệnh ! (QUAN TRỌNG!)
+    await bot.process_commands(message)
+
 # ==================== CHẠY BOT ====================
 TOKEN = "MTQ3OTA0MTk5NjkzNjA1MjkwMQ.GkaERE.RaqxrHxmOLnGsNrXRwkukX3KbWmUnVYxxaOcy4"  # 👈 DÒNG NÀY ĐÂY! - SỬA CHỖ NÀY!
 bot.run(TOKEN)  # 👈 DÒNG CUỐI CÙNG THẬT SỰ
